@@ -112,7 +112,7 @@ uint8_t * mle_tlv_write(mle_tlv_type_t type);
 
 void mle_tlv_parser(mle_tlv_t * tlv, uint8_t tbp[]);
 
-uint16_t source_address_function();
+uint8_t * source_address_function();
 uint8_t mode_function();
 uint32_t timeout_function();
 uint32_t challenge_function();
