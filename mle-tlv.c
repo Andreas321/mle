@@ -67,7 +67,8 @@ uint8_t * mle_tlv_write(mle_tlv_type_t type){
 	switch(tlv.type){
 
 		case 0://SourceAddress:								//Why are these unresolved? Because enum is of type int (4 bytes) as opposed to uint8_t
-			*(tlv.value) = source_address_function();		//16 bit can be multiple			//MAYBE REMOVE THE * 4:29pm
+			//*(tlv.value) = source_address_function();		//16 bit can be multiple			//MAYBE REMOVE THE * 4:29pm
+			source_address_function(tlv.value);
 			break;
 
 		case 1://Mode:
@@ -104,7 +105,7 @@ uint8_t * mle_tlv_write(mle_tlv_type_t type){
 			}
 	printf("source address function = %u\n",tlv.value);
 	printf("source address function = %u\n",*(tlv.value));
-	tlv.length = sizeof(tlv.value);					//probably should put a * here
+	tlv.length = sizeof(tlv.value);					//probably should put a * here.... Maybe not:it returned 1 instead of 2
 	//parsedtlv = mle_tlv_parser(&tlv);
 	//memcpy(parsedtlv,mle_tlv_parser(&tlv),sizeof(mle_tlv_parser(&tlv)));					//Check if *parsedtlv works instead of parsedtlv
 
@@ -120,8 +121,6 @@ void mle_tlv_parser(mle_tlv_t * tlv, uint8_t tbp[]){
 	//new function: pass the array by reference rather than declaring a new static array
 	uint8_t i;
 	uint8_t j;
-	*tbp = tlv->type;
-	*(tbp + 1) = tlv->length;
 
 	printf("\ninside mle-parser value is %u\n", *(tlv->value));
 	printf("\ninside mle-parser value is %u\n", *(tlv->value)  << 8);
@@ -130,14 +129,14 @@ void mle_tlv_parser(mle_tlv_t * tlv, uint8_t tbp[]){
 	printf("\n*(tbp+3) is %u",*(tbp+3));
 	printf("\n*(tbp+4) is %u\n",*(tbp+4));
 
-	//Original before union definition
+
+	tbp[0] = tlv->type;
+	tbp[1] = tlv->length;
 	for(i=2, j=0; i<(tlv->length +2); i++,j++){
-
-		*(tbp + i) = (*(tlv->value) << (8*j)) | *(tbp + i);
-		//*(tbp + i) = (*(tlv->value) << (8*j)) | *(tbp + i);
-		//*(tbp + i) = (*((tlv->value+j))) | *(tbp + i);
-
+			tbp[i] = tlv->value[j] | tbp[i];
 	}
+
+
 
 	printf("\n\n*(tbp+2) is %u",*(tbp+2));
 	printf("\n*(tbp+3) is %u",*(tbp+3));
@@ -189,12 +188,12 @@ uint8_t * mle_tlv_parser(mle_tlv_t * tlv){
 
 */
 
-uint8_t * source_address_function(){
+void source_address_function(uint8_t * value){
 
-	uint8_t myzero = 0;
-	uint8_t * value;
-	value = &myzero;
+	//uint8_t myzero = 0;
+	//value = &myzero;
 
+	*value = 0;
 	//containing 16 bit MAC address two MSB
 
 	//Somehow need to pass this bytes 8 and 9 of addr
@@ -246,10 +245,11 @@ uint8_t * source_address_function(){
 	//*value = *value | ipaddr.u8[8];
 	//*value = (*value << 8) |  ipaddr.u8[9];
 
-	//With myzero
-	*value = ipaddr.u8[9];
-	*(value + 1) = ipaddr.u8[8];
+	//*value = ipaddr.u8[9];
+	//*(value + 1) = ipaddr.u8[8];
 
+	value[0] = ipaddr.u8[9];
+	value[1] = ipaddr.u8[8];
 
 	printf("\n");
 	printf("The first address byte is ipaddr[8] = %u From ipaddr within the Source Address function", ipaddr.u8[8]);
@@ -263,9 +263,10 @@ uint8_t * source_address_function(){
 	printf("value is %u From within the Source Address function", *value);
 	printf("\n");
 
+	printf("\n");
+	printf("value[1] is %u From within the Source Address function", value[1]);
+	printf("\n");
 
-
-	return *value;
 }
 uint8_t mode_function(void){		//void for now
 /*
