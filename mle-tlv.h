@@ -108,19 +108,21 @@ typedef struct mle_tlv
 //function for parsing input to tlv format
 void mle_tlv_reader(mle_tlv_t *tlv, uint8_t *input);
 
-uint8_t mle_tlv_write(mle_tlv_type_t type, uint8_t *parsedtlv);
+uint8_t mle_tlv_write(mle_tlv_type_t type, uint8_t *parsedtlv, uint8_t startingposition);
 
-void mle_tlv_parser(mle_tlv_t * tlv, uint8_t tbp[]);
+void mle_tlv_parser(mle_tlv_t * tlv, uint8_t tbp[], uint8_t position);
 
 void source_address_function(uint8_t * value);
-uint8_t mode_function();
-uint32_t timeout_function();
-uint32_t challenge_function();
-uint32_t response_function();
-uint32_t linklayer_frame_counter_function();
+void mode_function(uint8_t * value);
+
+
+void timeout_function(uint8_t * value);
+void challenge_function(uint8_t * value);
+void response_function(uint8_t * value);
+void linklayer_frame_counter_function(uint8_t * value);
 void link_quality_function();
 void parameter_function();
-uint32_t mle_frame_counter_function();
+void mle_frame_counter_function(uint8_t * value);
 
 
 enum{								//will probably need to change this since enum is int type not uint8_t

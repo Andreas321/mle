@@ -31,6 +31,7 @@
 void mle_tlv_reader(mle_tlv_t *tlv, uint8_t *input){
 	// need to decide on the type of the input buffer maybe check UDP files?
 
+	//Maybe include checking of the security header here?
 	uint8_t i;
 
 	tlv->type = input[0]; //first 8 bits of buffer ;
@@ -57,12 +58,13 @@ void mle_tlv_reader(mle_tlv_t *tlv, uint8_t *input){
 
 }
 
-uint8_t mle_tlv_write(mle_tlv_type_t type, uint8_t *parsedtlv){
+uint8_t mle_tlv_write(mle_tlv_type_t type, uint8_t *parsedtlv, uint8_t startingposition){
 
 	mle_tlv_t tlv;
 	uint8_t lengthoftlv;
+	tlv.value = NULL;										//reset the value: not working
 	tlv.type = type;
-
+	printf("\nThe size of the NULL value is %d",sizeof(tlv.value));
 	switch(tlv.type){
 
 		case 0://SourceAddress:								//Why are these unresolved? Because enum is of type int (4 bytes) as opposed to uint8_t
@@ -70,7 +72,7 @@ uint8_t mle_tlv_write(mle_tlv_type_t type, uint8_t *parsedtlv){
 			break;
 
 		case 1://Mode:
-			*(tlv.value) = mode_function();				//8 bit
+			mode_function(tlv.value);				//8 bit
 			break;
 /*
 		case 2://Timeout:
@@ -78,9 +80,9 @@ uint8_t mle_tlv_write(mle_tlv_type_t type, uint8_t *parsedtlv){
 			break;
 
 		case 3://Challenge:
-			tlv.value = challenge_function();			//atleast 32 bit
+			challenge_function(tlv.value);			//atleast 32 bit
 			break;
-
+*//*
 		case 4://Response:
 			tlv.value = response_function();			//32 bit
 			break;
@@ -101,28 +103,20 @@ uint8_t mle_tlv_write(mle_tlv_type_t type, uint8_t *parsedtlv){
 			tlv.value = mleframecounter_function();		//32 bit
 			break;*/
 			}
-	printf("source address function = %u\n",tlv.value);
-	printf("source address function = %u\n",*(tlv.value));
-	tlv.length = sizeof(tlv.value);					//probably should put a * here.... Maybe not:it returned 1 instead of 2
+	printf("\ntlv.value = %u\n",tlv.value);
+	printf("*(tlv.value) = %u\n",*(tlv.value));
+	tlv.length = sizeof(tlv.value);					//
 	printf("\nThe size of tlv.value inside writer is %d",sizeof(tlv.value));
 	//uint8_t parsedtlv[30] = {0};
-	mle_tlv_parser(&tlv, parsedtlv);
+
+
+	//WILL NEED TO GIVE PARSER A STARTING POSITION
+	//DEFAULT WITH NO SECURITY HEADER IS 2, THEN IT MUST ADD THE SIZE OF THE PREVIOUS TLVs
+	mle_tlv_parser(&tlv, parsedtlv, startingposition);
 	printf("\nThe size of parsedtlv inside mle_tlv_writer is %d",sizeof(parsedtlv));
 
 
 
-
-	/*	//mle_tlv_write will now take an input uint8_t *pointer pointing to the buffer
-	 *
-	 * 	//first we will try to pass the predetermined array in to mle_parser failing that, the tlv may have to be parsed in this function
-	 *
-	 * 	//mle_tlv_write will return the length of the entire tlv
-	 *
-	 * uint8_t * parsedtlv
-	 *
-	 *
-	 *
-	 */
 
 	lengthoftlv = sizeof(tlv);
 	printf("\nThe size of tlv inside writer is %d",sizeof(tlv));
@@ -132,9 +126,9 @@ uint8_t mle_tlv_write(mle_tlv_type_t type, uint8_t *parsedtlv){
 
 //parsing the TLV structure to the output array
 //NEW function
-void mle_tlv_parser(mle_tlv_t * tlv, uint8_t tbp[]){
+void mle_tlv_parser(mle_tlv_t * tlv, uint8_t tbp[],uint8_t position){
 	//new function: pass the array by reference rather than declaring a new static array
-	uint8_t i;
+	//uint8_t i;
 	uint8_t j;
 
 	printf("\ninside mle-parser value is %u\n", *(tlv->value));
@@ -151,10 +145,11 @@ void mle_tlv_parser(mle_tlv_t * tlv, uint8_t tbp[]){
 	 *
 	 *
 	 */
-	tbp[2] = tlv->type;
-	tbp[3] = tlv->length;
-	for(i=4, j=0; i<(tlv->length +4); i++,j++){
-			tbp[i] = tlv->value[j] | tbp[i];
+	uint8_t limit = position +2;												//'2' is dependent on type and length remaining one byte each
+	tbp[position] = tlv->type;													//Position here will need to change when the security header is added
+	tbp[position+1] = tlv->length;
+	for(position+2, j=0; position<(tlv->length + limit); position++,j++){
+		tbp[position+2] = tlv->value[j] | tbp[position+2];
 	}
 
 
@@ -164,31 +159,10 @@ void mle_tlv_parser(mle_tlv_t * tlv, uint8_t tbp[]){
 	printf("\n\n*(tbp+4) is %u",*(tbp+4));
 	printf("\n*(tbp+5) is %u",*(tbp+5));
 	printf("\n*(tbp+6) is %u\n",*(tbp+6));
-
+	printf("\n\n*(tbp+7) is %u",*(tbp+7));
+	printf("\n*(tbp+8) is %u\n",*(tbp+8));
 	printf("the sizeof tbp inside parser is %d",sizeof(tbp));
 
-	//Possible solution to union problem
-/*
-	if(tlv->length == 1){
-
-		for(i=2, j=0; i<(tlv->length +2); i++,j++){
-
-			*(tbp + i) = ((tlv->value.u8) >> 8) | *(tbp + i);
-		}
-	}
-	else if(tlv->length == 2){
-
-		for(i=2, j=0; i<(tlv->length +2); i++,j++){
-
-			*(tbp + i) = ((tlv->value.u16) >> (8*j)) | *(tbp + i);
-		}
-	}*/
-
-
-
-
-	//i++;
-	//*(tbp+i) = '\0';				//may need to think about terminating the array. Issue as uint8_t array as opposed to int array
 
 }
 /*Old function
@@ -213,64 +187,16 @@ uint8_t * mle_tlv_parser(mle_tlv_t * tlv){
 */
 
 void source_address_function(uint8_t * value){
-
-	//uint8_t myzero = 0;
-	//value = &myzero;
-
-	*value = 0;
 	//containing 16 bit MAC address two MSB
 
-	//Somehow need to pass this bytes 8 and 9 of addr
-
-	//value = 0x5555;								//example for now
-
-
+	*value = 0;
 	static uip_ipaddr_t ipaddr;
-	uint8_t state;
-	uint8_t i;
 
 
 	uip_ip6addr(&ipaddr, UIP_DS6_DEFAULT_PREFIX, 0, 0, 0, 0, 0, 0, 0);					//Sets the IPv6 address
 	uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);											//Applies link-local(?) address to IPv6 and toggle link-local/multicast bit
 	uip_ds6_addr_add(&ipaddr, 0, ADDR_AUTOCONF);
 
-/*
-
-	for(i=0;i<2;i++){
-		memcpy(&value + i,ipaddr.u8[i+8],sizeof(uint8_t));
-	}
-*/
-/*
-	//TEST
-	uint8_t testbyte1 = 10;
-	uint8_t testbyte2 = 50;
-
-	memcpy(&value,ipaddr.u8[8],sizeof(uint8_t));
-	memcpy(&value + 1,ipaddr.u8[9],sizeof(uint8_t));
-
-*/
-/*
- *		//try this after (old)
- * 		memcpy(&value,ipaddr.u8[8],2*sizeof(uint8_t));
- */
-
-	//value = (value << 8) |  ipaddr.u8[8];
-/*
-	for(i=1; i<=2; i++){
-
-		value = (value << (8*i)) |  ipaddr.u8[7+i];
-
-	}
-	*/
-	//BEFORE FUNCTION RETURNED POINTER
-	//value = value |  ipaddr.u8[8];
-	//value = (value << 8) |  ipaddr.u8[9];
-
-	//*value = *value | ipaddr.u8[8];
-	//*value = (*value << 8) |  ipaddr.u8[9];
-
-	//*value = ipaddr.u8[9];
-	//*(value + 1) = ipaddr.u8[8];
 
 	value[0] = ipaddr.u8[9];
 	value[1] = ipaddr.u8[8];
@@ -292,7 +218,7 @@ void source_address_function(uint8_t * value){
 	printf("\n");
 
 }
-uint8_t mode_function(void){		//void for now
+void mode_function(uint8_t * value){		//void for now
 /*
 
 	byte string representing the mode by which this link is used by the source of the message
@@ -300,9 +226,9 @@ uint8_t mode_function(void){		//void for now
 */
 	//***************************MAYBE LOOKUP THE CAPABILTIES OF A Z1 mote*******************************************
 
-	uint8_t value = 0;
-	value  = value | 80;			//Setting bit[0] and bit[3] to 1 for now
-
+	*value = 0;
+	*value  = *value | 80;			//Setting bit[0] and bit[3] to 1 for now
+	printf("\n\n\n\n*value = %u",*value);
 	/*
 	bit 0 = Alternate PAN coordinator;
 		//set to one if the device is capable of becoming the PAN coordinator
@@ -319,16 +245,17 @@ uint8_t mode_function(void){		//void for now
 	bit 7 = Allocate Address;
 		//set to one if the device wishes the coordinator to allocate a 16-bit short address as a result of the association procedure.
 */
-	return value;
+
 }
-uint32_t timeout_function(){
+void timeout_function(uint8_t * value){
 
 	//32 bit uint of the expected maximum interval between transmissions in seconds
-	uint32_t value;
-	//Need to understand how to use the system timer.
-	return value;
+	//Only included if the sender is an rxOffWhenIdle device.
+	//at the moment I am only considering devices that are rxOnWhenIdle as seen by the mode tlv.
+
+
 }
-uint32_t challenge_function(){						//openthread has this returning const uint8_t *, where the variable is declared uint8_t mChallenge[kmaxSize]
+void challenge_function(uint8_t * value){						//openthread has this returning const uint8_t *, where the variable is declared uint8_t mChallenge[kmaxSize]
 	/*
 		randomly chosen byte string
 		rfc4086 describe generation
@@ -340,26 +267,26 @@ uint32_t challenge_function(){						//openthread has this returning const uint8_
 	*/
 		//refer to mle_router.cpp line 547
 	//"size of challenge is determined by the network configuration"
-	uint32_t value;
+	//uint32_t value;
+
 	uint16_t valueA;
 	uint16_t valueB;
 
 	srand(time(NULL));
 	valueA = rand();
 	valueB = rand();
-	value = (valueA << 16) | valueB;
+	*value = (valueA << 16) | valueB;
+	printf("\nvalueA is %u",valueA);
+	printf("\nvalueB is %u",valueB);
+	printf("\n*value is %u",*value);
 
-	return value;
+
 }
-uint32_t response_function(){
-	uint32_t value;
-
-	return value;
+void response_function(uint8_t * value){
+	//atleast  32bit
 }
-uint32_t linklayer_frame_counter_function(){
-	uint32_t value;
-
-	return value;
+void linklayer_frame_counter_function(uint8_t * value){
+	//32 bit
 }
 void link_quality_function(){
 
@@ -404,12 +331,10 @@ void parameter_function(){
 	//value;
 
 }
-uint32_t mle_frame_counter_function(){
-	uint32_t value;
+void mle_frame_counter_function(uint8_t * value){
 	/*
 			Contains senders outgoing frame counter, 32 bit uint
 	*/
 
-	return value;
 }
 

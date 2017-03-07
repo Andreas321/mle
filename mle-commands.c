@@ -42,7 +42,9 @@ static void auxiliary_header(){
 
 uint16_t link_request_out(uint8_t *buffer){
 
-	uint16_t length;
+	uint16_t length = 2;
+	//uint16_t length2;				//temporary
+
 
 	//Will probably call header function here
 	//initial byte indicating unsecure message
@@ -69,18 +71,19 @@ uint16_t link_request_out(uint8_t *buffer){
 	//Challenge
 
 	mle_tlv_type_t SourceAddress = 0;
-	length = mle_tlv_write(SourceAddress,buffer);
+	length += mle_tlv_write(SourceAddress,buffer,length);
 
-	//mle_tlv_type_t Mode = 1;
-	//length2 = mle_tlv_write(Mode,buffer);
+	mle_tlv_type_t Mode = 1;
+	length += mle_tlv_write(Mode,buffer,length);
 
-
+//	mle_tlv_type_t Challenge = 3;
+//	length += mle_tlv_write(Challenge,buffer,length);
 
 	//Refer to rpl-icmp6.c
 	//Refer to uip-icmp6.c and uip-icmp6.h
 	//  tcpip_ipv6_output();
 
-	length += 2;									//This '2' assumes no security header
+	//length += length2;									//This '2' assumes no security header
 	printf("length is %d",length);
 	//return length actually used - George
 
@@ -99,7 +102,6 @@ uint16_t link_accept_out(uint8_t *buffer){
 
 	/*********TLVs************/
 	//Source Address
-		//Long and Short
 	//Mode
 	//TimeOut
 	//Response
@@ -110,16 +112,72 @@ uint16_t link_accept_out(uint8_t *buffer){
 	//  tcpip_ipv6_output();
 
 	mle_tlv_type_t SourceAddress = 0;
-	//buffer[2] = mle_tlv_write(SourceAddress);
+	length += mle_tlv_write(SourceAddress,buffer,length);
 
+	mle_tlv_type_t Mode = 1;
+	length += mle_tlv_write(Mode,buffer,length);
+/*
+ 	mle_tlv_type_t TimeOut = 2;
+	length += mle_tlv_write(TimeOut,buffer,length);
+
+	mle_tlv_type_t Response = 4;
+	length += mle_tlv_write(Response,buffer,length);
+
+	mle_tlv_type_t LinkFrameCounter = 6;
+	length += mle_tlv_write(LinkFrameCounter,buffer,length);
+
+	mle_tlv_type_t MLEFrameCounter = 8;
+	length += mle_tlv_write(MLEFrameCounter,buffer,length);
+
+ */
 
 	length = sizeof(buffer);
 	return length;
 }
 
+uint16_t link_reject_out(uint8_t *buffer){
+	uint16_t length;
+	return length;
+}
+uint16_t link_accept_and_request_out(uint8_t *buffer){
 
-void link_accept_and_request_function(){}
-void link_reject_function(){}
+	uint16_t length;
+	/*********TLVs************/
+	//Source Address
+	//Mode
+	//TimeOut
+	//Challenge
+	//Response
+	//LinkLayerFrameCounter
+	//MLEFrameCounter
+
+	mle_tlv_type_t SourceAddress = 0;
+	length += mle_tlv_write(SourceAddress,buffer,length);
+
+	mle_tlv_type_t Mode = 1;
+	length += mle_tlv_write(Mode,buffer,length);
+/*
+ 	mle_tlv_type_t TimeOut = 2;
+	length += mle_tlv_write(TimeOut,buffer,length);
+
+	mle_tlv_type_t Challenge = 3;
+	length += mle_tlv_write(Challenge,buffer,length);
+
+	mle_tlv_type_t Response = 4;
+	length += mle_tlv_write(Response,buffer,length);
+
+	mle_tlv_type_t LinkFrameCounter = 6;
+	length += mle_tlv_write(LinkFrameCounter,buffer,length);
+
+	mle_tlv_type_t MLEFrameCounter = 8;
+	length += mle_tlv_write(MLEFrameCounter,buffer,length);
+
+ */
+	return length;
+
+}
+
+
 void advertisement_function(){}
 void update_function(){}
 void update_request_function(){}

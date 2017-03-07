@@ -28,8 +28,11 @@ typedef uint8_t mle_command_type_t;
 
 uint16_t link_request_out(uint8_t *buffer);
 uint16_t link_accept_out();
-void link_accept_and_request_function();
-void link_reject_function();
+uint16_t link_reject_out(uint8_t *buffer);
+uint16_t link_accept_and_request_out(uint8_t *buffer);
+
+
+
 void advertisement_function();
 void update_function();
 void update_request_function();
