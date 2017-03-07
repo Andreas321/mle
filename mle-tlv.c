@@ -60,14 +60,12 @@ void mle_tlv_reader(mle_tlv_t *tlv, uint8_t *input){
 uint8_t * mle_tlv_write(mle_tlv_type_t type){
 
 	mle_tlv_t tlv;
-	//uint8_t *parsedtlv;
 
 	tlv.type = type;
 
 	switch(tlv.type){
 
 		case 0://SourceAddress:								//Why are these unresolved? Because enum is of type int (4 bytes) as opposed to uint8_t
-			//*(tlv.value) = source_address_function();		//16 bit can be multiple			//MAYBE REMOVE THE * 4:29pm
 			source_address_function(tlv.value);
 			break;
 
@@ -106,11 +104,10 @@ uint8_t * mle_tlv_write(mle_tlv_type_t type){
 	printf("source address function = %u\n",tlv.value);
 	printf("source address function = %u\n",*(tlv.value));
 	tlv.length = sizeof(tlv.value);					//probably should put a * here.... Maybe not:it returned 1 instead of 2
-	//parsedtlv = mle_tlv_parser(&tlv);
-	//memcpy(parsedtlv,mle_tlv_parser(&tlv),sizeof(mle_tlv_parser(&tlv)));					//Check if *parsedtlv works instead of parsedtlv
-
+	printf("\nThe size of tlv.value inside writer is %d",sizeof(tlv.value));
 	uint8_t parsedtlv[30] = {0};
 	mle_tlv_parser(&tlv, parsedtlv);
+	printf("\nThe size of parsedtlv inside mle_tlv_writer is %d",sizeof(parsedtlv));
 	return parsedtlv;
 }
 
@@ -142,6 +139,7 @@ void mle_tlv_parser(mle_tlv_t * tlv, uint8_t tbp[]){
 	printf("\n*(tbp+3) is %u",*(tbp+3));
 	printf("\n*(tbp+4) is %u\n",*(tbp+4));
 
+	printf("the sizeof tbp inside parser is %d",sizeof(tbp));
 
 	//Possible solution to union problem
 /*

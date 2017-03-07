@@ -70,8 +70,8 @@ uint16_t link_request_out(uint8_t *buffer){
 	//Challenge
 
 	mle_tlv_type_t SourceAddress = 0;
-	memcpy(&buffer[2],mle_tlv_write(SourceAddress),sizeof(mle_tlv_write(SourceAddress)));
-
+	memcpy(&buffer[2],mle_tlv_write(SourceAddress),4);									//temporarily set this size to 4
+	printf("The size of mel tlv write is %u\n",sizeof(mle_tlv_write(SourceAddress)));
 	//mle_tlv_type_t Mode = 1;
 	//memcpy((void*) &buffer[2],mle_tlv_write(Mode),sizeof(mle_tlv_write(Mode)));
 
