@@ -57,10 +57,10 @@ void mle_tlv_reader(mle_tlv_t *tlv, uint8_t *input){
 
 }
 
-uint8_t * mle_tlv_write(mle_tlv_type_t type){
+uint8_t mle_tlv_write(mle_tlv_type_t type, uint8_t *parsedtlv){
 
 	mle_tlv_t tlv;
-
+	uint8_t lengthoftlv;
 	tlv.type = type;
 
 	switch(tlv.type){
@@ -105,10 +105,28 @@ uint8_t * mle_tlv_write(mle_tlv_type_t type){
 	printf("source address function = %u\n",*(tlv.value));
 	tlv.length = sizeof(tlv.value);					//probably should put a * here.... Maybe not:it returned 1 instead of 2
 	printf("\nThe size of tlv.value inside writer is %d",sizeof(tlv.value));
-	uint8_t parsedtlv[30] = {0};
+	//uint8_t parsedtlv[30] = {0};
 	mle_tlv_parser(&tlv, parsedtlv);
 	printf("\nThe size of parsedtlv inside mle_tlv_writer is %d",sizeof(parsedtlv));
-	return parsedtlv;
+
+
+
+
+	/*	//mle_tlv_write will now take an input uint8_t *pointer pointing to the buffer
+	 *
+	 * 	//first we will try to pass the predetermined array in to mle_parser failing that, the tlv may have to be parsed in this function
+	 *
+	 * 	//mle_tlv_write will return the length of the entire tlv
+	 *
+	 * uint8_t * parsedtlv
+	 *
+	 *
+	 *
+	 */
+
+	lengthoftlv = sizeof(tlv);
+	printf("\nThe size of tlv inside writer is %d",sizeof(tlv));
+	return lengthoftlv;
 }
 
 
@@ -122,22 +140,30 @@ void mle_tlv_parser(mle_tlv_t * tlv, uint8_t tbp[]){
 	printf("\ninside mle-parser value is %u\n", *(tlv->value));
 	printf("\ninside mle-parser value is %u\n", *(tlv->value)  << 8);
 
-	printf("\n\n*(tbp+2) is %u",*(tbp+2));
-	printf("\n*(tbp+3) is %u",*(tbp+3));
-	printf("\n*(tbp+4) is %u\n",*(tbp+4));
+	printf("\n\n*(tbp+4) is %u",*(tbp+4));
+	printf("\n*(tbp+5) is %u",*(tbp+5));
+	printf("\n*(tbp+6) is %u\n",*(tbp+6));
 
-
-	tbp[0] = tlv->type;
-	tbp[1] = tlv->length;
-	for(i=2, j=0; i<(tlv->length +2); i++,j++){
+	/*
+	 * 	//tbp will now need to begin from [2]
+	 * 	//input for tbp may need to change
+	 *
+	 *
+	 *
+	 */
+	tbp[2] = tlv->type;
+	tbp[3] = tlv->length;
+	for(i=4, j=0; i<(tlv->length +4); i++,j++){
 			tbp[i] = tlv->value[j] | tbp[i];
 	}
 
 
-
-	printf("\n\n*(tbp+2) is %u",*(tbp+2));
-	printf("\n*(tbp+3) is %u",*(tbp+3));
-	printf("\n*(tbp+4) is %u\n",*(tbp+4));
+	printf("\n\n*(tbp+1) is %u",*(tbp+1));
+	printf("\n*(tbp+2) is %u",*(tbp+2));
+	printf("\n*(tbp+3) is %u\n",*(tbp+3));
+	printf("\n\n*(tbp+4) is %u",*(tbp+4));
+	printf("\n*(tbp+5) is %u",*(tbp+5));
+	printf("\n*(tbp+6) is %u\n",*(tbp+6));
 
 	printf("the sizeof tbp inside parser is %d",sizeof(tbp));
 

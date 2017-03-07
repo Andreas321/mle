@@ -108,7 +108,7 @@ typedef struct mle_tlv
 //function for parsing input to tlv format
 void mle_tlv_reader(mle_tlv_t *tlv, uint8_t *input);
 
-uint8_t * mle_tlv_write(mle_tlv_type_t type);
+uint8_t mle_tlv_write(mle_tlv_type_t type, uint8_t *parsedtlv);
 
 void mle_tlv_parser(mle_tlv_t * tlv, uint8_t tbp[]);
 

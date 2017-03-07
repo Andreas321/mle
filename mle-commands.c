@@ -64,29 +64,26 @@ uint16_t link_request_out(uint8_t *buffer){
 
 	/*********TLVs***************/
 	//Source Address
-		//Long and Short
 	//Mode
 	//TimeOut
 	//Challenge
 
 	mle_tlv_type_t SourceAddress = 0;
-	memcpy(&buffer[2],mle_tlv_write(SourceAddress),4);									//temporarily set this size to 4
-	printf("The size of mel tlv write is %u\n",sizeof(mle_tlv_write(SourceAddress)));
+	length = mle_tlv_write(SourceAddress,buffer);
+
 	//mle_tlv_type_t Mode = 1;
-	//memcpy((void*) &buffer[2],mle_tlv_write(Mode),sizeof(mle_tlv_write(Mode)));
+	//length2 = mle_tlv_write(Mode,buffer);
 
 
-
-
-
-	length = sizeof(buffer);					//Will this actually return the length of non-empty terms?
 
 	//Refer to rpl-icmp6.c
 	//Refer to uip-icmp6.c and uip-icmp6.h
 	//  tcpip_ipv6_output();
 
-
+	length += 2;									//This '2' assumes no security header
+	printf("length is %d",length);
 	//return length actually used - George
+
 	return length;
 }
 
