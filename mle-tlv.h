@@ -120,8 +120,8 @@ void timeout_function(uint8_t * value);
 void challenge_function(uint8_t * value);
 void response_function(uint8_t * value);
 void linklayer_frame_counter_function(uint8_t * value);
-void link_quality_function();
-void parameter_function();
+void link_quality_function(uint8_t * value);
+void parameter_function(uint8_t * value);
 void mle_frame_counter_function(uint8_t * value);
 
 

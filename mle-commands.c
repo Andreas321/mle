@@ -11,6 +11,8 @@
 #include "stdio.h"
 #include "stdint.h"
 #include "string.h"
+#include "simple-udp.h"
+
 //refering to core/net/rpl/rpl.icmp6.c
 
 static void auxiliary_header(){
@@ -92,12 +94,14 @@ uint16_t link_request_out(uint8_t *buffer){
 
 uint16_t link_accept_out(uint8_t *buffer){
 
-	uint16_t length;
+	printf("\nin the link accept function");
+	uint16_t length = 2;
 	//auxiliary header function
 	buffer[0] = 255;
 	//CommandType = 1;
 	mle_command_type_t LinkAccept = 1;
 	buffer[1] = LinkAccept;
+
 
 
 	/*********TLVs************/
@@ -107,6 +111,7 @@ uint16_t link_accept_out(uint8_t *buffer){
 	//Response
 	//LinkLayerFrameCounter
 	//MLEFrameCounter
+
 	//Refer to rpl-icmp6.c
 	//Refer to uip-icmp6.c and uip-icmp6.h
 	//  tcpip_ipv6_output();
@@ -136,12 +141,16 @@ uint16_t link_accept_out(uint8_t *buffer){
 }
 
 uint16_t link_reject_out(uint8_t *buffer){
-	uint16_t length;
+	printf("\nin the link reject function");
+	uint16_t length = 2;
+
+
 	return length;
 }
 uint16_t link_accept_and_request_out(uint8_t *buffer){
 
-	uint16_t length;
+	printf("\nin the link accept and request function");
+	uint16_t length = 2;
 	/*********TLVs************/
 	//Source Address
 	//Mode
@@ -150,6 +159,10 @@ uint16_t link_accept_and_request_out(uint8_t *buffer){
 	//Response
 	//LinkLayerFrameCounter
 	//MLEFrameCounter
+
+	buffer[0] = 255;
+	mle_command_type_t link_accept_and_request = 1;
+	buffer[1] = link_accept_and_request;
 
 	mle_tlv_type_t SourceAddress = 0;
 	length += mle_tlv_write(SourceAddress,buffer,length);
@@ -182,3 +195,25 @@ void advertisement_function(){}
 void update_function(){}
 void update_request_function(){}
 
+uint8_t link_request_in(const uint8_t * data, uint16_t datalength,uint8_t * output_buffer){
+
+	//what are conditions of accept/reject
+		//other than check security header
+		//or are messages without security headers just ignored
+	uint8_t outputlength;
+
+	if(data[0] == 255){													//unsecure for the moment
+
+		//if(){
+			outputlength  = link_accept_and_request_out(output_buffer);
+		//}
+		//else{
+			//link_accept_out();
+		//}
+	}
+	else{
+		outputlength = link_reject_out(output_buffer);
+	}
+
+	return outputlength;
+}

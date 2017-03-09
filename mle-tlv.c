@@ -191,12 +191,23 @@ void source_address_function(uint8_t * value){
 
 	*value = 0;
 	static uip_ipaddr_t ipaddr;
-
+	  int i;
+	  uint8_t state;
 
 	uip_ip6addr(&ipaddr, UIP_DS6_DEFAULT_PREFIX, 0, 0, 0, 0, 0, 0, 0);					//Sets the IPv6 address
 	uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);											//Applies link-local(?) address to IPv6 and toggle link-local/multicast bit
 	uip_ds6_addr_add(&ipaddr, 0, ADDR_AUTOCONF);
 
+
+	  printf("IPv6 addresses: ");
+	  for(i = 0; i < UIP_DS6_ADDR_NB; i++) {
+	    state = uip_ds6_if.addr_list[i].state;
+	    if(uip_ds6_if.addr_list[i].isused &&
+	       (state == ADDR_TENTATIVE || state == ADDR_PREFERRED)) {
+	      uip_debug_ipaddr_print(&uip_ds6_if.addr_list[i].ipaddr);
+	      printf("\n");
+	    }
+	  }
 
 	value[0] = ipaddr.u8[9];
 	value[1] = ipaddr.u8[8];
@@ -288,7 +299,7 @@ void response_function(uint8_t * value){
 void linklayer_frame_counter_function(uint8_t * value){
 	//32 bit
 }
-void link_quality_function(){
+void link_quality_function(uint8_t * value){
 
 	//First byte is C,Res,Size  0|000|0000
 
@@ -316,7 +327,7 @@ void link_quality_function(){
 		.*/
 
 }
-void parameter_function(){
+void parameter_function(uint8_t * value){
 	/*Specifies value of link layer parameter shared across the network
 			Parameter ID
 				0 Channel

@@ -10,6 +10,7 @@
 
 //#error explode
 #include "stdint.h"
+#include "simple-udp.h"
 
 enum{									//will need to change this as enum is in int not uint8_t
 	LinkRequest				= 0,
@@ -37,6 +38,7 @@ void advertisement_function();
 void update_function();
 void update_request_function();
 
+uint8_t link_request_in(const uint8_t * data, uint16_t datalength,uint8_t * output_buffer);
 
 
 
